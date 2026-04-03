@@ -22,11 +22,18 @@ def random_quote():
 
 @app.route("/quotes", methods=["POST"])
 def add_quote():
-    data = request.get_json()
+    data = request.get_json(silent=True)
 
+    # Validate input
     if not data or "text" not in data:
-        return jsonify({"error": "Invalid input"}), 400
+        return jsonify({"error": "Invalid or missing JSON"}), 400
 
+    # Prevent duplicate quotes
+    for quote in quotes:
+        if quote["text"].strip().lower() == data["text"].strip().lower():
+            return jsonify({"error": "Quote already exists"}), 400
+
+    # Create new quote
     new_quote = {
         "id": len(quotes) + 1,
         "text": data["text"]
